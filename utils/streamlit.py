@@ -23,7 +23,7 @@ def render_point_card(subject, name):
     p = point_data(subject, name)
     glyph = PLANET_GLYPHS.get(name, "")
     retro = " (R)" if getattr(p, "retrograde", False) else ""
-    st.markdown(f"**{glyph} {point_label(name)}{retro}**  \n*{subject.name}*")
+    st.markdown(f"**{glyph} {point_label(name)}{retro}**  \n")
     st.markdown(f"{point_position_str(p)} · {point_house_str(p)}")
 
 
