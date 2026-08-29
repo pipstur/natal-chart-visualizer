@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
@@ -16,22 +17,29 @@ def get_tz_finder():
 
 @st.cache_data(ttl=86400)
 def geocode_city(query):
-    """Geocode a city and return coordinates, timezone, and address."""
-    location = get_geolocator().geocode(query, timeout=10)
-
-    if location is None:
-        return None
-
-    tz = get_tz_finder().timezone_at(
-        lat=location.latitude,
-        lng=location.longitude,
+    response = requests.get(
+        "https://api.geoapify.com/v1/geocode/search",
+        params={
+            "text": query,
+            "apiKey": st.secrets["GEOAPIFY_API_KEY"],
+            "limit": 1,
+        },
+        timeout=10,
     )
 
+    response.raise_for_status()
+
+    data = response.json()
+
+    if not data.get("features"):
+        return None
+
+    properties = data["features"][0]["properties"]
+
     return {
-        "latitude": round(location.latitude, 4),
-        "longitude": round(location.longitude, 4),
-        "timezone": tz or "",
-        "address": location.address,
+        "latitude": round(properties["lat"], 4),
+        "longitude": round(properties["lon"], 4),
+        "address": properties.get("formatted", query),
     }
 
 
@@ -50,9 +58,14 @@ def do_geocode():
             st.session_state.geocode_error = f"Couldn't find “{query}”."
             st.session_state.resolved_place = None
             return
+
+        tz = get_tz_finder().timezone_at(
+            lat=result["latitude"],
+            lng=result["longitude"],
+        )
         st.session_state.lat_val = str(result["latitude"])
         st.session_state.lng_val = str(result["longitude"])
-        st.session_state.tz_val = result["timezone"]
+        st.session_state.tz_val = tz
         st.session_state.resolved_place = result["address"]
         st.session_state.geocode_error = None
     except (GeocoderTimedOut, GeocoderServiceError) as e:
