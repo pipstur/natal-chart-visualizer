@@ -251,10 +251,12 @@ with tab_aspects:
 
 with tab_data:
     st.subheader("Planets & points")
-    st.dataframe(planets_dataframe(subject, active_points), width="content", hide_index=True)
+    st.dataframe(
+        planets_dataframe(subject, active_points), width="content", hide_index=True, height=460
+    )
 
     st.subheader("Houses")
-    st.dataframe(houses_dataframe(subject), width="content", hide_index=True)
+    st.dataframe(houses_dataframe(subject), width="content", hide_index=True, height=460)
 
     st.subheader("Aspects")
     st.dataframe(aspects_dataframe(chart_data, active_points), width="content", hide_index=True)
