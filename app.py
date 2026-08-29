@@ -51,16 +51,16 @@ st.session_state.setdefault("geocode_error", None)
 # Sidebar - birth data form
 with st.sidebar:
     st.markdown("## ✦ Birth data")
-    name = st.text_input("Name", "Voja")
+    name = st.text_input("Name", "Name")
 
     c1, c2, c3 = st.columns(3)
-    year = c1.number_input("Year", 1, 2200, 2000)
+    day = c3.number_input("Day", 1, 31, 1)
     month = c2.number_input("Month", 1, 12, 1)
-    day = c3.number_input("Day", 1, 31, 3)
+    year = c1.number_input("Year", 1, 2200, 2000)
 
     c4, c5 = st.columns(2)
     hour = c4.number_input("Hour", 0, 23, 12)
-    minute = c5.number_input("Minute", 0, 59, 50)
+    minute = c5.number_input("Minute", 0, 59, 00)
 
     st.markdown("**Birthplace**")
     cs1, cs2 = st.columns([3, 1])
@@ -127,7 +127,7 @@ st.markdown(
     <div style="padding:0.25rem 0 1rem 0;">
         <h1 style="margin-bottom:0;">{subject.name}</h1>
         <p style="color:#9a9488; margin-top:0.15rem;">
-            {subject.year}-{subject.month:02d}-{subject.day:02d} · {subject.hour:02d}:{subject.minute:02d} # noqa: E501
+            {subject.day}-{subject.month}-{subject.year}- · {subject.hour}:{subject.minute}
             &nbsp;·&nbsp; {tz_str} &nbsp;·&nbsp; lat {lat:.3f}, lng {lng:.3f}
             &nbsp;·&nbsp; Sun <b>{subject.sun.sign}</b>
             &nbsp;·&nbsp; Ascendant <b>{subject.ascendant.sign}</b>
