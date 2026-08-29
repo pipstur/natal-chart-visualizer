@@ -66,7 +66,7 @@ if "geocode_error" not in st.session_state:
 # Sidebar - birth data form
 with st.sidebar:
     st.markdown("## ✦ Birth data")
-    name = st.text_input("Name", "Name")
+    name = st.text_input("Name", "")
 
     c1, c2, c3 = st.columns(3)
     day = c1.number_input("Day", 1, 31, 1)
