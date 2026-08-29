@@ -7,3 +7,4 @@ pandas== 2.3.3
 geopy==2.5.0
 timezonefinder==8.2.0
 rootutils==1.0.7
+groq==1.7.0

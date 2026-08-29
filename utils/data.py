@@ -6,7 +6,7 @@ import math
 
 from kerykeion import AstrologicalSubjectFactory
 
-from config.config import HOUSE_NAME_TO_NUM, HOUSE_ORDINAL_WORDS, SIGN_GLYPHS
+from config.config import ASPECT_SYMBOLS, HOUSE_NAME_TO_NUM, HOUSE_ORDINAL_WORDS, SIGN_GLYPHS
 
 
 def compute_subject(name, year, month, day, hour, minute, lat, lng, tz_str, house_system):
@@ -123,3 +123,86 @@ def point_position_str(p):
 def point_house_str(p):
     n = house_num_of(p)
     return f"{ordinal(n)} house" if n else "—"
+
+
+def chart_context_block(subj, chart_data, active_points):
+    """Full plain-text dump of the whole chart, for the free-form chat tab."""
+    lines = [
+        f"Subject: {subj.name}",
+        f"Born: {subj.day:02d}-{subj.month:02d}-{subj.year} {subj.hour:02d}:{subj.minute:02d}",
+        f"Ascendant: {subj.ascendant.sign} {format_dms(subj.ascendant.position)}",
+        f"Midheaven: {subj.medium_coeli.sign} {format_dms(subj.medium_coeli.position)}",
+        "",
+        "Points:",
+    ]
+    for name in active_points:
+        p = point_data(subj, name)
+        retro = " (retrograde)" if getattr(p, "retrograde", False) else ""
+        lines.append(
+            f"  {point_label(name)}: {point_position_str(p)}, {point_house_str(p)}{retro}"
+        )
+    lines.append("")
+    lines.append("Aspects:")
+    for asp in chart_data.aspects:
+        if asp.p1_name in active_points and asp.p2_name in active_points:
+            sym = ASPECT_SYMBOLS.get(asp.aspect, "")
+            lines.append(
+                f"  {point_label(asp.p1_name)} {sym} {asp.aspect} {point_label(asp.p2_name)} "
+                f"(orb {format_dms(asp.orbit)}, {asp.aspect_movement})"
+            )
+    return "\n".join(lines)
+
+
+def describe_selection(subject, chart_data, active_points, selection, find_aspect):
+    kind, key = selection["kind"], selection["key"]
+
+    if kind == "planet":
+        p = point_data(subject, key)
+        retro = " (retrograde)" if getattr(p, "retrograde", False) else ""
+        lines = [f"{point_label(key)}{retro}: {point_position_str(p)}, {point_house_str(p)}."]
+
+        # include aspects
+        involved = [
+            a
+            for a in chart_data.aspects
+            if key in (a.p1_name, a.p2_name)
+            and a.p1_name in active_points
+            and a.p2_name in active_points
+        ]
+        if involved:
+            lines.append("Aspects:")
+            for a in involved:
+                other = a.p2_name if a.p1_name == key else a.p1_name
+                sym = ASPECT_SYMBOLS.get(a.aspect, "")
+                lines.append(
+                    f"  {sym} {a.aspect} {point_label(other)}, orb {format_dms(a.orbit)}, \
+                        {a.aspect_movement}."
+                )
+        return "\n".join(lines)
+
+    if kind == "aspect":
+        asp = find_aspect(chart_data, active_points, key)
+        if asp is None:
+            return None
+        p1, p2 = point_data(subject, asp.p1_name), point_data(subject, asp.p2_name)
+        sym = ASPECT_SYMBOLS.get(asp.aspect, "")
+        return (
+            f"{point_label(asp.p1_name)} {sym} {asp.aspect} {point_label(asp.p2_name)}, "
+            f"orb {format_dms(asp.orbit)}, {asp.aspect_movement}.\n"
+            f"{point_label(asp.p1_name)}: {point_position_str(p1)}, {point_house_str(p1)}.\n"
+            f"{point_label(asp.p2_name)}: {point_position_str(p2)}, {point_house_str(p2)}."
+        )
+
+    if kind == "sign":
+        from config.config import SIGN_NAMES
+
+        members = [n for n in active_points if point_data(subject, n).sign_num == key]
+        if not members:
+            return None
+        lines = [f"Points in {SIGN_NAMES[key]}:"]
+        for n in members:
+            p = point_data(subject, n)
+            lines.append(f"  {point_label(n)}: {point_position_str(p)}, {point_house_str(p)}.")
+        return "\n".join(lines)
+
+    return None

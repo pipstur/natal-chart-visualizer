@@ -29,7 +29,19 @@ from config.config import (
     DEFAULT_ACTIVE_POINTS,
     PLANET_GLYPHS,
 )
-from utils.data import compute_subject, point_label
+from utils.ai import (
+    build_chat_messages,
+    build_continuation_messages,
+    build_interpret_messages,
+    stream_completion,
+)
+from utils.data import (
+    chart_context_block,
+    compute_subject,
+    describe_selection,
+    find_aspect,
+    point_label,
+)
 from utils.geocoding import do_geocode
 from utils.plot import build_wheel_figure
 from utils.streamlit import (
@@ -181,8 +193,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_wheel, tab_rendered, tab_aspects, tab_data = st.tabs(
-    ["Interactive wheel", "Rendered chart", "Aspect grid", "Data"]
+tab_wheel, tab_rendered, tab_aspects, tab_data, tab_chat = st.tabs(
+    ["Interactive wheel", "Rendered chart", "Aspect grid", "Data", "Ask"]
 )
 
 with tab_wheel:
@@ -222,8 +234,38 @@ with tab_wheel:
     #     st.write("event.selection:", dict(event.selection) if event and event.selection else None) # noqa: E501
     #     st.write("stored selection:", st.session_state.selection)
 
+    # "Explain this" button
     with col_info:
         render_detail_panel(subject, chart_data, active_points, st.session_state.selection)
+
+        if st.session_state.selection:
+            if st.button("✦ Interpret this", key="interpret_btn"):
+                desc = describe_selection(
+                    subject, chart_data, active_points, st.session_state.selection, find_aspect
+                )
+                if desc:
+                    st.session_state.interpret_messages = build_interpret_messages(desc)
+                    st.session_state.interpret_status = {}
+                    st.session_state.interpret_text = st.write_stream(
+                        stream_completion(
+                            st.session_state.interpret_messages,
+                            status=st.session_state.interpret_status,
+                        )
+                    )
+
+        # Truncation fallback, optional
+        if st.session_state.get("interpret_status", {}).get("finish_reason") == "length":
+            st.caption("⚠️ Cut off by the token limit.")
+            if st.button("Continue", key="interpret_continue_btn"):
+                cont_msgs = build_continuation_messages(
+                    st.session_state.interpret_messages, st.session_state.interpret_text
+                )
+                status = {}
+                more = st.write_stream(stream_completion(cont_msgs, status=status))
+                st.session_state.interpret_text += more
+                st.session_state.interpret_messages = cont_msgs
+                st.session_state.interpret_status = status
+
 
 with tab_rendered:
     drawer = ChartDrawer(chart_data=chart_data)
@@ -260,3 +302,36 @@ with tab_data:
 
     st.subheader("Aspects")
     st.dataframe(aspects_dataframe(chart_data, active_points), width="content", hide_index=True)
+
+
+# AI Groq chat
+with tab_chat:
+    st.session_state.setdefault("chat_history", [])
+
+    for turn in st.session_state.chat_history:
+        with st.chat_message(turn["role"]):
+            st.markdown(turn["content"])
+
+    question = st.chat_input("Ask about your chart...")
+    if question:
+        st.session_state.chat_history.append({"role": "user", "content": question})
+        with st.chat_message("user"):
+            st.markdown(question)
+
+        chart_context = chart_context_block(subject, chart_data, active_points)
+        messages = build_chat_messages(chart_context, st.session_state.chat_history[:-1], question)
+        status = {}
+        with st.chat_message("assistant"):
+            reply = st.write_stream(
+                stream_completion(messages, status=status, max_completion_tokens=1200)
+            )
+            if status.get("finish_reason") == "length":
+                st.caption("⚠️ Cut off by the token limit.")
+                if st.button(
+                    "Continue", key=f"chat_continue_{len(st.session_state.chat_history)}"
+                ):
+                    cont_msgs = build_continuation_messages(messages, reply)
+                    reply += st.write_stream(
+                        stream_completion(cont_msgs, max_completion_tokens=1200)
+                    )
+        st.session_state.chat_history.append({"role": "assistant", "content": reply})
