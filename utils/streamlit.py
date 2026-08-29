@@ -29,7 +29,9 @@ def render_point_card(subject, name):
 
 def render_detail_panel(subject, chart_data, active_points, selection):
     if selection is None:
-        st.caption("Click a planet, aspect line, or sign on the wheel to see details here.")
+        st.caption(
+            "Click zoom (right corner of graph), then a planet or sign on the wheel to see details"
+        )
         return
 
     kind, key = selection["kind"], selection["key"]
