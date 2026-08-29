@@ -156,8 +156,8 @@ if generate or "subject" not in st.session_state:
             name, year, month, day, hour, minute, lat, lng, tz_str, house_system
         )
         st.session_state.selection = None
-    except Exception as e:
-        st.info(f"Input your info :)\n\n`{e}`")
+    except Exception:
+        st.info("Input / check your info :)")
         st.stop()
 
 subject = st.session_state.subject
