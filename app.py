@@ -129,8 +129,8 @@ st.markdown(
         <p style="color:#9a9488; margin-top:0.15rem;">
             {subject.year}-{subject.month:02d}-{subject.day:02d} · {subject.hour:02d}:{subject.minute:02d} # noqa: E501
             &nbsp;·&nbsp; {tz_str} &nbsp;·&nbsp; lat {lat:.3f}, lng {lng:.3f}
-            &nbsp;·&nbsp; Ascendant <b>{subject.ascendant.sign}</b>
             &nbsp;·&nbsp; Sun <b>{subject.sun.sign}</b>
+            &nbsp;·&nbsp; Ascendant <b>{subject.ascendant.sign}</b>
             &nbsp;·&nbsp; Moon <b>{subject.moon.sign}</b>
         </p>
     </div>
