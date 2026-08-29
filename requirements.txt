@@ -1,0 +1,9 @@
+kerykeion==5.12.9
+tzdata==2026.3
+kerykeion==5.12.9
+streamlit==1.62.0
+plotly==7.0.0
+pandas== 2.3.3
+geopy==2.5.0
+timezonefinder==8.2.0
+rootutils==1.0.7
