@@ -27,10 +27,10 @@ def do_geocode():
             st.session_state.resolved_place = None
             return
         tz = get_tz_finder().timezone_at(lat=location.latitude, lng=location.longitude)
-        st.session_state.lat_val = round(location.latitude, 4)
-        st.session_state.lng_val = round(location.longitude, 4)
-        if tz:
-            st.session_state.tz_val = tz
+        st.session_state.lat_val = str(round(location.latitude, 4))
+        st.session_state.lng_val = str(round(location.longitude, 4))
+        st.session_state.tz_val = tz or ""
+
         st.session_state.resolved_place = location.address
         st.session_state.geocode_error = None
     except (GeocoderTimedOut, GeocoderServiceError) as e:

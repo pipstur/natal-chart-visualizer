@@ -41,12 +41,27 @@ from utils.streamlit import (
 )
 
 st.set_page_config(page_title="Natal Chart Explorer", layout="wide", page_icon="✦")
-
-st.session_state.setdefault("lat_val", 44.804)
-st.session_state.setdefault("lng_val", 20.465)
-st.session_state.setdefault("tz_val", "Europe/Belgrade")
+st.session_state.setdefault("lat_val", "")
+st.session_state.setdefault("lng_val", "")
+st.session_state.setdefault("tz_val", "")
 st.session_state.setdefault("resolved_place", None)
 st.session_state.setdefault("geocode_error", None)
+
+
+if "lat_val" not in st.session_state:
+    st.session_state.lat_val = None
+
+if "lng_val" not in st.session_state:
+    st.session_state.lng_val = None
+
+if "tz_val" not in st.session_state:
+    st.session_state.tz_val = ""
+
+if "resolved_place" not in st.session_state:
+    st.session_state.resolved_place = None
+
+if "geocode_error" not in st.session_state:
+    st.session_state.geocode_error = None
 
 # Sidebar - birth data form
 with st.sidebar:
@@ -54,31 +69,54 @@ with st.sidebar:
     name = st.text_input("Name", "Name")
 
     c1, c2, c3 = st.columns(3)
-    day = c3.number_input("Day", 1, 31, 1)
+    day = c1.number_input("Day", 1, 31, 1)
     month = c2.number_input("Month", 1, 12, 1)
-    year = c1.number_input("Year", 1, 2200, 2000)
+    year = c3.number_input("Year", 1, 2200, 2000)
 
     c4, c5 = st.columns(2)
     hour = c4.number_input("Hour", 0, 23, 12)
-    minute = c5.number_input("Minute", 0, 59, 00)
+    minute = c5.number_input("Minute", 0, 59, 0)
 
     st.markdown("**Birthplace**")
+
     cs1, cs2 = st.columns([3, 1])
+
     cs1.text_input(
         "City search",
         key="city_query",
         placeholder="e.g. Belgrade, Serbia",
         label_visibility="collapsed",
     )
-    cs2.button("🔍", on_click=do_geocode, width="stretch", help="Look up city")
+
+    cs2.button(
+        "🔍",
+        on_click=do_geocode,
+        width="stretch",
+        help="Look up city",
+    )
+
     if st.session_state.geocode_error:
         st.error(st.session_state.geocode_error, icon="⚠️")
     elif st.session_state.resolved_place:
         st.caption(f"📍 {st.session_state.resolved_place}")
 
-    lat = st.number_input("Latitude", -90.0, 90.0, key="lat_val", format="%.4f")
-    lng = st.number_input("Longitude", -180.0, 180.0, key="lng_val", format="%.4f")
-    tz_str = st.text_input("Timezone (IANA)", key="tz_val")
+    lat_str = st.text_input(
+        "Latitude",
+        key="lat_val",
+        placeholder="Search for a city first",
+    )
+
+    lng_str = st.text_input(
+        "Longitude",
+        key="lng_val",
+        placeholder="Search for a city first",
+    )
+
+    tz_str = st.text_input(
+        "Timezone (IANA)",
+        key="tz_val",
+        placeholder="Search for a city first",
+    )
 
     house_system = st.selectbox(
         "House system",
@@ -106,6 +144,11 @@ with st.sidebar:
     show_aspects = st.checkbox("Show aspects", value=True)
     generate = st.button("Generate chart", type="primary", width="stretch")
 
+
+lat = float(lat_str) if lat_str else None
+lng = float(lng_str) if lng_str else None
+tz_str = tz_str.strip() or None
+
 # Compute
 if generate or "subject" not in st.session_state:
     try:
@@ -114,7 +157,7 @@ if generate or "subject" not in st.session_state:
         )
         st.session_state.selection = None
     except Exception as e:
-        st.error(f"Couldn't compute this chart — check the inputs.\n\n`{e}`")
+        st.info(f"Input your info :)\n\n`{e}`")
         st.stop()
 
 subject = st.session_state.subject
@@ -127,7 +170,7 @@ st.markdown(
     <div style="padding:0.25rem 0 1rem 0;">
         <h1 style="margin-bottom:0;">{subject.name}</h1>
         <p style="color:#9a9488; margin-top:0.15rem;">
-            {subject.day}-{subject.month}-{subject.year}- · {subject.hour}:{subject.minute}
+            {subject.day:02d}-{subject.month:02d}-{subject.year}·{subject.hour:02d}:{subject.minute:02d}
             &nbsp;·&nbsp; {tz_str} &nbsp;·&nbsp; lat {lat:.3f}, lng {lng:.3f}
             &nbsp;·&nbsp; Sun <b>{subject.sun.sign}</b>
             &nbsp;·&nbsp; Ascendant <b>{subject.ascendant.sign}</b>
