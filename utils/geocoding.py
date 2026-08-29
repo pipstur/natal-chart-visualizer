@@ -6,7 +6,7 @@ from timezonefinder import TimezoneFinder
 
 @st.cache_resource
 def get_geolocator():
-    return Nominatim(user_agent="natal-chart-explorer-app")
+    return Nominatim(user_agent="natal-chart-explorer-app v1.0 (vojislavstevanovic171@gmail.com)")
 
 
 @st.cache_resource
