@@ -12,7 +12,6 @@ CLASSIC_PLANETS = [
 ]
 OPTIONAL_POINTS = ["True_North_Lunar_Node", "True_South_Lunar_Node", "Mean_Lilith", "Chiron"]
 ALL_POSSIBLE_POINTS = CLASSIC_PLANETS + OPTIONAL_POINTS
-DEFAULT_ACTIVE_POINTS = CLASSIC_PLANETS + ["True_North_Lunar_Node", "Chiron"]
 
 ASPECT_STYLE = {
     "conjunction": dict(color="#8a8278", dash="solid"),

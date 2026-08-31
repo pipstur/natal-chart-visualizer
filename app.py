@@ -22,13 +22,7 @@ import streamlit as st
 from kerykeion import ChartDataFactory
 from kerykeion.charts.chart_drawer import ChartDrawer
 
-from config.config import (
-    ALL_POSSIBLE_POINTS,
-    ASPECT_STYLE,
-    ASPECT_SYMBOLS,
-    DEFAULT_ACTIVE_POINTS,
-    PLANET_GLYPHS,
-)
+from config.config import ALL_POSSIBLE_POINTS, ASPECT_STYLE, ASPECT_SYMBOLS, PLANET_GLYPHS
 from utils.ai import (
     build_chat_messages,
     build_continuation_messages,
@@ -149,7 +143,7 @@ with st.sidebar:
     active_points = st.multiselect(
         "Points to show",
         options=ALL_POSSIBLE_POINTS,
-        default=DEFAULT_ACTIVE_POINTS,
+        default=ALL_POSSIBLE_POINTS,
         format_func=lambda n: f"{PLANET_GLYPHS.get(n, '')} {point_label(n)}",
         help="Lilith and the South Node are opt-in to keep the wheel from getting too busy.",
     )
