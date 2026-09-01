@@ -26,6 +26,7 @@ ASPECT_SYMBOLS = {
     "square": "□",
     "trine": "△",
     "sextile": "⚹",
+    "quintile": "⚼",
 }
 
 SIGN_GLYPHS = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"]
