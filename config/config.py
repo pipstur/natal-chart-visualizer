@@ -19,6 +19,7 @@ ASPECT_STYLE = {
     "square": dict(color="#c0392b", dash="dot"),
     "trine": dict(color="#2b7fc0", dash="solid"),
     "sextile": dict(color="#2b9c6b", dash="dot"),
+    "quintile": dict(color="#8e44ad", dash="dot"),
 }
 ASPECT_SYMBOLS = {
     "conjunction": "☌",
